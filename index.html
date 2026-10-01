@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="nb">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#111310" />
+    <meta
+      name="description"
+      content="Snarveier for kjøreturen med Tesla Model Y."
+    />
+    <title>Roadbook | Model Y</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #f3f1e9;
+        --muted: #a2a49c;
+        --surface: #1b1e19;
+        --surface-raised: #232720;
+        --line: rgba(237, 238, 223, 0.12);
+        --lime: #d2e879;
+        --amber: #e9a766;
+        --blue: #91c4c2;
+        --page: #111310;
+        --font: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-width: 320px;
+        min-height: 100vh;
+        margin: 0;
+        color: var(--ink);
+        background-color: var(--page);
+        background-image:
+          repeating-linear-gradient(
+            0deg,
+            transparent 0 63px,
+            rgba(223, 231, 198, 0.025) 64px
+          ),
+          repeating-linear-gradient(
+            90deg,
+            transparent 0 63px,
+            rgba(223, 231, 198, 0.025) 64px
+          ),
+          radial-gradient(
+            ellipse at 82% 0%,
+            rgba(169, 189, 106, 0.1),
+            transparent 42%
+          );
+        font-family: var(--font);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .shell {
+        width: min(100% - 72px, 1480px);
+        margin-inline: auto;
+        padding-block: 34px 26px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 54px;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 21px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 38px;
+        height: 38px;
+        place-items: center;
+        border: 1px solid rgba(210, 232, 121, 0.5);
+        border-radius: 50%;
+        color: var(--lime);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0;
+      }
+
+      .brand-name,
+      .eyebrow,
+      .meta-label,
+      .section-title,
+      .link-index {
+        font-size: 11px;
+        font-weight: 650;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .brand-name {
+        color: #e5e6dc;
+      }
+
+      .car-name {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .car-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--lime);
+        box-shadow: 0 0 12px rgba(210, 232, 121, 0.45);
+      }
+
+      .welcome {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: end;
+        gap: 30px;
+        padding-block: clamp(40px, 7vh, 78px) 42px;
+      }
+
+      .eyebrow {
+        color: var(--lime);
+      }
+
+      h1 {
+        max-width: 800px;
+        margin: 13px 0 0;
+        font-size: clamp(38px, 5.2vw, 70px);
+        font-weight: 500;
+        line-height: 1.03;
+        letter-spacing: 0;
+      }
+
+      .time-panel {
+        min-width: 205px;
+        padding: 0 0 5px 25px;
+        border-left: 1px solid var(--line);
+        text-align: right;
+      }
+
+      .time {
+        font-size: clamp(30px, 3.4vw, 44px);
+        font-variant-numeric: tabular-nums;
+        font-weight: 450;
+        line-height: 1;
+      }
+
+      .date {
+        margin-top: 9px;
+        color: var(--muted);
+        font-size: 13px;
+        text-transform: capitalize;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        margin-bottom: 15px;
+      }
+
+      .section-title {
+        color: #c2c4ba;
+      }
+
+      .section-rule {
+        height: 1px;
+        flex: 1;
+        background: var(--line);
+      }
+
+      .link-grid {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .link-card {
+        position: relative;
+        display: flex;
+        min-height: 175px;
+        grid-column: span 2;
+        flex-direction: column;
+        justify-content: space-between;
+        overflow: hidden;
+        padding: 22px 23px 19px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        background: linear-gradient(
+          140deg,
+          rgba(38, 42, 34, 0.96),
+          rgba(26, 29, 25, 0.96)
+        );
+        text-decoration: none;
+        transition:
+          border-color 0.18s ease,
+          background-color 0.18s ease,
+          transform 0.18s ease;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .link-card:nth-child(4),
+      .link-card:nth-child(5) {
+        grid-column: span 3;
+      }
+
+      .link-card::after {
+        position: absolute;
+        right: -32px;
+        bottom: -53px;
+        width: 145px;
+        height: 108px;
+        border: 1px solid color-mix(in srgb, var(--accent), transparent 73%);
+        border-radius: 50%;
+        content: "";
+        transform: rotate(-24deg);
+        box-shadow:
+          0 0 0 12px rgba(0, 0, 0, 0),
+          0 0 0 13px color-mix(in srgb, var(--accent), transparent 89%);
+        pointer-events: none;
+      }
+
+      .link-card:hover,
+      .link-card:focus-visible {
+        border-color: color-mix(in srgb, var(--accent), transparent 36%);
+        background: linear-gradient(140deg, #292e25, #20241e);
+        transform: translateY(-2px);
+      }
+
+      .link-card:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+      }
+
+      .link-top,
+      .link-bottom {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .link-index {
+        color: var(--accent);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .link-arrow {
+        color: var(--accent);
+        font-size: 22px;
+        font-weight: 300;
+        line-height: 1;
+        transition: transform 0.18s ease;
+      }
+
+      .link-card:hover .link-arrow,
+      .link-card:focus-visible .link-arrow {
+        transform: translate(3px, -3px);
+      }
+
+      .link-copy {
+        min-width: 0;
+      }
+
+      .link-title {
+        margin: 0;
+        font-size: clamp(20px, 2vw, 25px);
+        font-weight: 500;
+        line-height: 1.15;
+        letter-spacing: 0;
+      }
+
+      .link-detail {
+        margin: 6px 0 0;
+        overflow: hidden;
+        color: var(--muted);
+        font-size: 13px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-top: 25px;
+        color: #81847a;
+        font-size: 11px;
+      }
+
+      .footer-note {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .footer-line {
+        width: 17px;
+        height: 1px;
+        background: var(--lime);
+      }
+
+      @media (max-width: 760px) {
+        .shell {
+          width: min(100% - 36px, 620px);
+          padding-top: 21px;
+        }
+        .welcome {
+          grid-template-columns: 1fr;
+          gap: 26px;
+          padding-block: 43px 31px;
+        }
+        .time-panel {
+          display: flex;
+          align-items: baseline;
+          justify-content: space-between;
+          min-width: 0;
+          padding: 13px 0 0;
+          border-top: 1px solid var(--line);
+          border-left: 0;
+          text-align: left;
+        }
+        .date {
+          margin-top: 0;
+        }
+        .link-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 10px;
+        }
+        .link-card,
+        .link-card:nth-child(4),
+        .link-card:nth-child(5) {
+          min-height: 155px;
+          grid-column: span 1;
+          padding: 17px;
+        }
+        .link-card:last-child {
+          grid-column: 1 / -1;
+          min-height: 135px;
+        }
+        .link-title {
+          font-size: 20px;
+        }
+        .link-detail {
+          font-size: 12px;
+        }
+      }
+
+      @media (max-width: 420px) {
+        .shell {
+          width: calc(100% - 28px);
+        }
+        .car-name {
+          font-size: 11px;
+        }
+        .brand-name {
+          font-size: 10px;
+        }
+        .brand {
+          gap: 9px;
+        }
+        .link-grid {
+          grid-template-columns: 1fr;
+        }
+        .link-card,
+        .link-card:nth-child(4),
+        .link-card:nth-child(5),
+        .link-card:last-child {
+          min-height: 120px;
+          grid-column: auto;
+        }
+        .link-card {
+          flex-direction: row;
+          align-items: center;
+        }
+        .link-top {
+          align-self: flex-start;
+        }
+        .link-bottom {
+          flex: 1;
+        }
+        .link-copy {
+          margin-left: 16px;
+        }
+        .link-arrow {
+          align-self: flex-start;
+        }
+        .footer {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">R</div>
+          <div class="brand-name">Roadbook</div>
+        </div>
+        <div class="car-name">
+          <span class="car-dot" aria-hidden="true"></span> Model Y
+          <span aria-hidden="true">·</span> Midnight black
+        </div>
+      </header>
+
+      <section class="welcome" aria-labelledby="welcome-title">
+        <div>
+          <div class="eyebrow">Din kjøretur, samlet</div>
+          <h1 id="welcome-title">God tur.</h1>
+        </div>
+        <div class="time-panel" aria-label="Lokal tid i Norge">
+          <div class="time" id="clock">--:--</div>
+          <div class="date" id="date">Laster dato</div>
+        </div>
+      </section>
+
+      <section aria-labelledby="links-heading">
+        <div class="section-head">
+          <div class="section-title" id="links-heading">På veien</div>
+          <div class="section-rule" aria-hidden="true"></div>
+        </div>
+
+        <nav class="link-grid" aria-label="Snarveier for kjøreturen">
+          <a
+            class="link-card"
+            href="https://www.yr.no/nb"
+            target="_blank"
+            rel="noopener noreferrer"
+            style="--accent: var(--blue)"
+          >
+            <div class="link-top">
+              <span class="link-index">01 / VÆR</span
+              ><span class="link-arrow" aria-hidden="true">↗</span>
+            </div>
+            <div class="link-bottom">
+              <div class="link-copy">
+                <h2 class="link-title">Yr</h2>
+                <p class="link-detail">Vær langs ruta</p>
+              </div>
+            </div>
+          </a>
+
+          <a
+            class="link-card"
+            href="https://tyristubben.duckdns.org:8123/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style="--accent: var(--lime)"
+          >
+            <div class="link-top">
+              <span class="link-index">02 / HJEM</span
+              ><span class="link-arrow" aria-hidden="true">↗</span>
+            </div>
+            <div class="link-bottom">
+              <div class="link-copy">
+                <h2 class="link-title">Hjemme</h2>
+                <p class="link-detail">Home Assistant</p>
+              </div>
+            </div>
+          </a>
+
+          <a
+            class="link-card"
+            href="https://no.parkopedia.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style="--accent: var(--amber)"
+          >
+            <div class="link-top">
+              <span class="link-index">03 / PARKERING</span
+              ><span class="link-arrow" aria-hidden="true">↗</span>
+            </div>
+            <div class="link-bottom">
+              <div class="link-copy">
+                <h2 class="link-title">Parkering</h2>
+                <p class="link-detail">Finn og sammenlign plasser</p>
+              </div>
+            </div>
+          </a>
+
+          <a
+            class="link-card"
+            href="https://bompengekalkulator.no/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style="--accent: var(--lime)"
+          >
+            <div class="link-top">
+              <span class="link-index">04 / BOM</span
+              ><span class="link-arrow" aria-hidden="true">↗</span>
+            </div>
+            <div class="link-bottom">
+              <div class="link-copy">
+                <h2 class="link-title">Bompengekalkulator</h2>
+                <p class="link-detail">Beregn kostnaden for turen</p>
+              </div>
+            </div>
+          </a>
+
+          <a
+            class="link-card"
+            href="https://www.vegvesen.no/trafikkbeta?lat=59.75372&amp;long=10.61476&amp;zoom=6&amp;listView=false"
+            target="_blank"
+            rel="noopener noreferrer"
+            style="--accent: var(--blue)"
+          >
+            <div class="link-top">
+              <span class="link-index">05 / TRAFIKK</span
+              ><span class="link-arrow" aria-hidden="true">↗</span>
+            </div>
+            <div class="link-bottom">
+              <div class="link-copy">
+                <h2 class="link-title">Vegvesenet</h2>
+                <p class="link-detail">Trafikk, hendelser og veimeldinger</p>
+              </div>
+            </div>
+          </a>
+        </nav>
+      </section>
+
+      <footer class="footer">
+        <div class="footer-note">
+          <span class="footer-line" aria-hidden="true"></span> Oslo, Norge
+        </div>
+        <div>ROADBOOK <span aria-hidden="true">·</span> MODEL Y</div>
+      </footer>
+    </main>
+
+    <script>
+      const clock = document.querySelector("#clock");
+      const date = document.querySelector("#date");
+      const timeFormatter = new Intl.DateTimeFormat("nb-NO", {
+        timeZone: "Europe/Oslo",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      const dateFormatter = new Intl.DateTimeFormat("nb-NO", {
+        timeZone: "Europe/Oslo",
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      });
+
+      function updateClock() {
+        const now = new Date();
+        clock.textContent = timeFormatter.format(now);
+        date.textContent = dateFormatter.format(now);
+      }
+
+      updateClock();
+      window.setInterval(updateClock, 30_000);
+    </script>
+  </body>
+</html>
