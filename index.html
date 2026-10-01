@@ -315,6 +315,19 @@
         display: none;
       }
 
+      .location-fallback {
+        display: inline-flex;
+        margin-top: 8px;
+        color: var(--lime);
+        font-size: 13px;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
+      .location-fallback[hidden] {
+        display: none;
+      }
+
       .footer-note {
         display: flex;
         align-items: center;
@@ -561,6 +574,16 @@
           role="status"
           aria-live="polite"
         ></p>
+        <a
+          id="location-fallback"
+          class="location-fallback"
+          href="https://www.vegvesen.no/trafikk/hvaskjer?lat=59.74582874640005&amp;lng=10.22817357939377&amp;zoom=11&amp;showTfl=1&amp;a=active_now-active_later"
+          target="_blank"
+          rel="noopener noreferrer"
+          hidden
+        >
+          Åpne standardområdet
+        </a>
       </section>
 
       <footer class="footer">
@@ -597,51 +620,59 @@
 
       const trafficLink = document.querySelector("#traffic-link");
       const locationStatus = document.querySelector("#location-status");
+      const locationFallback = document.querySelector("#location-fallback");
+      let locationRequestPending = false;
+
       trafficLink.addEventListener("click", (event) => {
-        if (!navigator.geolocation) {
-          locationStatus.textContent = isSecureContext
-            ? "Denne nettleseren støtter ikke posisjon. Åpner standardområdet."
-            : "Posisjon krever at startsiden åpnes via HTTPS. Åpner standardområdet.";
+        event.preventDefault();
+        if (locationRequestPending) return;
+        locationFallback.hidden = true;
+
+        if (!isSecureContext) {
+          locationStatus.textContent =
+            "Posisjon krever at startsiden åpnes via HTTPS. Du kan åpne standardområdet manuelt.";
+          locationFallback.hidden = false;
           return;
         }
 
-        event.preventDefault();
-        const trafficWindow = window.open("about:blank", "_blank");
-        const navigate = (url) => {
-          if (trafficWindow && !trafficWindow.closed) {
-            trafficWindow.location.replace(url);
-          } else {
-            window.location.assign(url);
-          }
-        };
-
-        if (trafficWindow) {
-          trafficWindow.opener = null;
-          trafficWindow.document.title = "Henter posisjon";
-          trafficWindow.document.body.textContent = "Henter posisjon ...";
-        } else {
+        if (!navigator.geolocation) {
           locationStatus.textContent =
-            "Nettleseren blokkerte ny fane. Åpner trafikkart i denne fanen.";
+            "Denne nettleseren støtter ikke posisjon. Du kan åpne standardområdet manuelt.";
+          locationFallback.hidden = false;
+          return;
         }
 
+        locationRequestPending = true;
+        locationStatus.textContent = "Henter posisjon ...";
+
         const openDefaultLocation = (error) => {
+          if (!locationRequestPending) return;
+          locationRequestPending = false;
+          window.clearTimeout(locationRequestTimeout);
           const errorMessages = {
             1: "Posisjonstilgang er avslått. Tillat posisjon for siden i nettleseren.",
             2: "Nettleseren kunne ikke finne posisjonen akkurat nå.",
             3: "Det tok for lang tid å hente posisjonen.",
           };
-          locationStatus.textContent = `${errorMessages[error?.code] || "Posisjonen kunne ikke hentes."} Åpner standardområdet.`;
-          navigate(trafficLink.href);
+          locationStatus.textContent = `${errorMessages[error?.code] || "Posisjonen kunne ikke hentes."} Du kan åpne standardområdet manuelt.`;
+          locationFallback.hidden = false;
         };
+
+        const locationRequestTimeout = window.setTimeout(() => {
+          openDefaultLocation({ code: 3 });
+        }, 22_000);
 
         try {
           navigator.geolocation.getCurrentPosition(
             ({ coords }) => {
+              if (!locationRequestPending) return;
+              locationRequestPending = false;
+              window.clearTimeout(locationRequestTimeout);
               const destination = new URL(trafficLink.href);
               destination.searchParams.set("lat", coords.latitude);
               destination.searchParams.set("lng", coords.longitude);
               locationStatus.textContent = "Posisjon funnet. Åpner trafikkart.";
-              navigate(destination.toString());
+              window.location.assign(destination.toString());
             },
             openDefaultLocation,
             { enableHighAccuracy: true, maximumAge: 0, timeout: 20_000 },
