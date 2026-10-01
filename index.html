@@ -526,7 +526,8 @@
 
           <a
             class="link-card"
-            href="https://www.vegvesen.no/trafikkbeta?lat=59.75372&amp;long=10.61476&amp;zoom=6&amp;listView=false"
+            id="traffic-link"
+            href="https://www.vegvesen.no/trafikk/hvaskjer?lat=59.74582874640005&amp;lng=10.22817357939377&amp;zoom=11&amp;showTfl=1&amp;a=active_now-active_later"
             target="_blank"
             rel="noopener noreferrer"
             style="--accent: var(--blue)"
@@ -576,6 +577,37 @@
 
       updateClock();
       window.setInterval(updateClock, 30_000);
+
+      const trafficLink = document.querySelector("#traffic-link");
+      trafficLink.addEventListener("click", (event) => {
+        if (!navigator.geolocation) return;
+
+        event.preventDefault();
+        const trafficWindow = window.open("about:blank", "_blank");
+        if (!trafficWindow) {
+          window.location.assign(trafficLink.href);
+          return;
+        }
+
+        trafficWindow.opener = null;
+        trafficWindow.document.title = "Henter posisjon";
+        trafficWindow.document.body.textContent = "Henter posisjon ...";
+
+        const openDefaultLocation = () => {
+          trafficWindow.location.replace(trafficLink.href);
+        };
+
+        navigator.geolocation.getCurrentPosition(
+          ({ coords }) => {
+            const destination = new URL(trafficLink.href);
+            destination.searchParams.set("lat", coords.latitude);
+            destination.searchParams.set("lng", coords.longitude);
+            trafficWindow.location.replace(destination.toString());
+          },
+          openDefaultLocation,
+          { enableHighAccuracy: false, maximumAge: 30_000, timeout: 10_000 },
+        );
+      });
     </script>
   </body>
 </html>
