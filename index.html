@@ -304,6 +304,17 @@
         font-size: 11px;
       }
 
+      .location-status {
+        margin: 14px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      .location-status:empty {
+        display: none;
+      }
+
       .footer-note {
         display: flex;
         align-items: center;
@@ -544,6 +555,12 @@
             </div>
           </a>
         </nav>
+        <p
+          id="location-status"
+          class="location-status"
+          role="status"
+          aria-live="polite"
+        ></p>
       </section>
 
       <footer class="footer">
@@ -579,34 +596,59 @@
       window.setInterval(updateClock, 30_000);
 
       const trafficLink = document.querySelector("#traffic-link");
+      const locationStatus = document.querySelector("#location-status");
       trafficLink.addEventListener("click", (event) => {
-        if (!navigator.geolocation) return;
-
-        event.preventDefault();
-        const trafficWindow = window.open("about:blank", "_blank");
-        if (!trafficWindow) {
-          window.location.assign(trafficLink.href);
+        if (!navigator.geolocation) {
+          locationStatus.textContent = isSecureContext
+            ? "Denne nettleseren støtter ikke posisjon. Åpner standardområdet."
+            : "Posisjon krever at startsiden åpnes via HTTPS. Åpner standardområdet.";
           return;
         }
 
-        trafficWindow.opener = null;
-        trafficWindow.document.title = "Henter posisjon";
-        trafficWindow.document.body.textContent = "Henter posisjon ...";
-
-        const openDefaultLocation = () => {
-          trafficWindow.location.replace(trafficLink.href);
+        event.preventDefault();
+        const trafficWindow = window.open("about:blank", "_blank");
+        const navigate = (url) => {
+          if (trafficWindow && !trafficWindow.closed) {
+            trafficWindow.location.replace(url);
+          } else {
+            window.location.assign(url);
+          }
         };
 
-        navigator.geolocation.getCurrentPosition(
-          ({ coords }) => {
-            const destination = new URL(trafficLink.href);
-            destination.searchParams.set("lat", coords.latitude);
-            destination.searchParams.set("lng", coords.longitude);
-            trafficWindow.location.replace(destination.toString());
-          },
-          openDefaultLocation,
-          { enableHighAccuracy: false, maximumAge: 30_000, timeout: 10_000 },
-        );
+        if (trafficWindow) {
+          trafficWindow.opener = null;
+          trafficWindow.document.title = "Henter posisjon";
+          trafficWindow.document.body.textContent = "Henter posisjon ...";
+        } else {
+          locationStatus.textContent =
+            "Nettleseren blokkerte ny fane. Åpner trafikkart i denne fanen.";
+        }
+
+        const openDefaultLocation = (error) => {
+          const errorMessages = {
+            1: "Posisjonstilgang er avslått. Tillat posisjon for siden i nettleseren.",
+            2: "Nettleseren kunne ikke finne posisjonen akkurat nå.",
+            3: "Det tok for lang tid å hente posisjonen.",
+          };
+          locationStatus.textContent = `${errorMessages[error?.code] || "Posisjonen kunne ikke hentes."} Åpner standardområdet.`;
+          navigate(trafficLink.href);
+        };
+
+        try {
+          navigator.geolocation.getCurrentPosition(
+            ({ coords }) => {
+              const destination = new URL(trafficLink.href);
+              destination.searchParams.set("lat", coords.latitude);
+              destination.searchParams.set("lng", coords.longitude);
+              locationStatus.textContent = "Posisjon funnet. Åpner trafikkart.";
+              navigate(destination.toString());
+            },
+            openDefaultLocation,
+            { enableHighAccuracy: true, maximumAge: 0, timeout: 20_000 },
+          );
+        } catch (error) {
+          openDefaultLocation(error);
+        }
       });
     </script>
   </body>
